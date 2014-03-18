@@ -1,0 +1,3 @@
+Sineatra is an implementation of the popular webserver API Sinatra, except it's a toy implementation in FeepingCreature's toy language. It should 
+then OBVIOUSLY be used for production and enterprise-level websites.
+Just kidding. Don't do that. Never ever use this ever.
