@@ -1,0 +1,4 @@
+.kateproject
+.kateproject.d/*
+.git/*
+*.kdev4

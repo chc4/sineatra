@@ -1,0 +1,13 @@
+module sineatra.TestCase;
+import sineatra.WebServer;
+import sineatra.ClassDef;
+
+//import std.time;
+
+
+void main(string[] arg){
+	get("/test/path",delegate string(RequestProperties request){
+		return "$(request.args)";
+	});
+	tPool.waitComplete;
+}

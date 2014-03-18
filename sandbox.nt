@@ -1,0 +1,29 @@
+module sineatra.sandbox;
+import std.(string,socket,thread,time);
+import c.arpa.inet;
+
+alias DEBUG_BUILD = true;
+
+template debug(T){
+    void debug(T str){
+        static if(DEBUG_BUILD){
+            writeln("$str");
+        }
+    }
+}
+
+void main(string[] arg){
+    scope ThreadPool tPool = new ThreadPool(2);
+    Socket testSock = new Socket();
+    testSock.reuse(true);
+    testSock.bind(new TcpAddress("127.0.0.1",short:7777));
+
+    string test = "Foobar";
+    string (testa, testb) = test.slice(`:`);
+    if (testa is null || testb is null){
+        writeln("Oh shucks");
+        return;
+    }
+    writeln("$(testb[$-1])");
+    writeln("$testa $testb");
+}
