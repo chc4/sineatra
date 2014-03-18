@@ -1,4 +1,4 @@
 .kateproject
 .kateproject.d/*
-.git/*
 *.kdev4
+*.kate-swp
