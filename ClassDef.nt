@@ -3,48 +3,48 @@ import std.socket;
 
 class RequestProperties{
     Socket underlayingSocket;
-	string protocol; //GET, POST, etc.
+    string protocol; //GET, POST, etc.
 
-	string url;
-	alias path = url;
+    string url;
+    alias path = url;
 
-	(string,string)[auto~] arguments;
-	alias args = arguments;
-	alias params = arguments;
+    (string,string)[auto~] arguments;
+    alias args = arguments;
+    alias params = arguments;
 
-	(string,string)[auto~] headers;
+    (string,string)[auto~] headers;
 
-	void free(){
+    void free(){
         headers.free;
         arguments.free;
-	}
+    }
 }
 
 class ResponseProperties{
-	ResponseBuilder builder;
-	(string,string)[auto~] headers;
+    ResponseBuilder builder;
+    (string,string)[auto~] headers;
 
-	void free(){
+    void free(){
         headers.free;
-	}
+    }
 }
 
 class ResponseBuilder{
-	ubyte[auto~] content; //Lets assume I know when to use auto~
-	ubyte[] final(){
-		return content[];
-	}
-	void append(string text){
-		string ntext = text.replace("\n","\r\n"); //HTTP uses CRLF, Linux uses LF, stuff breaks
-		content~=(ubyte[]:ntext);
-	}
-	void init(string _text){
-		append(_text);
-	}
+    ubyte[auto~] content; //Lets assume I know when to use auto~
+    ubyte[] final(){
+        return content[];
+    }
+    void append(string text){
+        string ntext = text.replace("\n","\r\n"); //HTTP uses CRLF, Linux uses LF, stuff breaks
+        content~=(ubyte[]:ntext);
+    }
+    void init(string _text){
+        append(_text);
+    }
 
-	void free(){
+    void free(){
         content.free;
-	}
+    }
 }
 
 
@@ -54,12 +54,12 @@ class ResponseBuilder{
 // Allow pattern matching?
 //Also allow wildcards that are set to variables ie /path/to/:file will be ["path","to",":s"] with :s matching * and being replaced in the function
 class Path{
-	(string,string)[auto~] wildcards; //Holder for wildcard matching to value mapping
-	void init(){}
-	void init(string _path,string delegate(RequestProperties params) _onRequest){
-		//this.path=_path.split('/');
-		this.onRequest = _onRequest;
-	}
-	string[] path;
-	string delegate(RequestProperties params) onRequest;
+    (string,string)[auto~] wildcards; //Holder for wildcard matching to value mapping
+    void init(){}
+    void init(string _path,string delegate(RequestProperties params) _onRequest){
+        //this.path=_path.split('/');
+        this.onRequest = _onRequest;
+    }
+    string[] path;
+    string delegate(RequestProperties params) onRequest;
 }

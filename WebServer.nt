@@ -26,13 +26,13 @@ shared Socket servSocket;
 shared ThreadPool tPool;
 
 void initSineatra(){
-	initSineatra(8080);
+    initSineatra(8080);
 }
 
 void initSineatra(int port){ //Called if not already setup before get()
-	matchedPaths = new Path[auto~] 4;
-	tPool = new ThreadPool(17); //Server accept loop + 16 connections
-	setupListener(port);
+    matchedPaths = new Path[auto~] 4;
+    tPool = new ThreadPool(17); //Server accept loop + 16 connections
+    setupListener(port);
 }
 
 void listenSocket(){
@@ -42,44 +42,44 @@ void listenSocket(){
         fprintf(stdout,"%.*s\n","$e");
         return;
     }
-	scope Socket clientSocket = servSocket.accept();
-	(sockaddr* addr,int a) = clientSocket.boundAddr.getAddrHandle();
+    scope Socket clientSocket = servSocket.accept();
+    (sockaddr* addr,int a) = clientSocket.boundAddr.getAddrHandle();
     char* addrStr = inet_ntoa(sockaddr_in*:addr.sin_addr);
-	debug("Connection incomming. IP:$(addrStr.CToString())");
-	scope char[auto~] readBytes;
-	ubyte[] readBuffer = new ubyte[] 512;
-	int k = 0; //Bytes last read
-	while(true){
-		k=clientSocket.recv(readBuffer);
-		debug("Read $k bytes");
-		if(k==-1){
-			debug("Stream ended");
-			break;
-		}
-		readBytes~=(char[]:readBuffer)[0..k];
-		if((string:readBuffer)[0..k].rfind("\r\n\r\n")!=-1){
-			debug("Double newline!");
-			break;
-		}
-	}
-	readBuffer.free;
-	debug("$(char[]:readBytes[])");
-	scope RequestProperties request = new RequestProperties; //Object to keep track of the request attributes
-	scope ResponseBuilder response = new ResponseBuilder(""); //Object to write the response's attributes
-	request.underlayingSocket = clientSocket;
-	request.url = "";
-	scope string[] matches;
-	string content = (string:readBytes[]);
-	//slice returns null if not found, which is great for this. Even malformed packets shouldn't crash.
-	string reqtype = slice(&content," "); //None inclusive <3
-	string url = slice(&content," ");
+    debug("Connection incomming. IP:$(addrStr.CToString())");
+    scope char[auto~] readBytes;
+    ubyte[] readBuffer = new ubyte[] 512;
+    int k = 0; //Bytes last read
+    while(true){
+        k=clientSocket.recv(readBuffer);
+        debug("Read $k bytes");
+        if(k==-1){
+            debug("Stream ended");
+            break;
+        }
+        readBytes~=(char[]:readBuffer)[0..k];
+        if((string:readBuffer)[0..k].rfind("\r\n\r\n")!=-1){
+            debug("Double newline!");
+            break;
+        }
+    }
+    readBuffer.free;
+    debug("$(char[]:readBytes[])");
+    scope RequestProperties request = new RequestProperties; //Object to keep track of the request attributes
+    scope ResponseBuilder response = new ResponseBuilder(""); //Object to write the response's attributes
+    request.underlayingSocket = clientSocket;
+    request.url = "";
+    scope string[] matches;
+    string content = (string:readBytes[]);
+    //slice returns null if not found, which is great for this. Even malformed packets shouldn't crash.
+    string reqtype = slice(&content," "); //None inclusive <3
+    string url = slice(&content," ");
     string httpReq = slice(&content,"\r\n");
-	if(reqtype is null || url is null || httpReq is null){
-		debug("Failed to parse HTTP request!");
-		return;
-	}
-	request.url = url;
-	debug("ReqType = $(reqtype)\nURL = $(url)\nHTTPJunk = $(httpReq)");
+    if(reqtype is null || url is null || httpReq is null){
+        debug("Failed to parse HTTP request!");
+        return;
+    }
+    request.url = url;
+    debug("ReqType = $(reqtype)\nURL = $(url)\nHTTPJunk = $(httpReq)");
     while(true){
         if(string curHeader = slice(&content,"\r\n")){
             if(curHeader.length==0){
@@ -100,7 +100,7 @@ void listenSocket(){
             break;
         }
     }
-	scope ResponseBuilder build = new ResponseBuilder("HTTP/1.1 300 OK
+    scope ResponseBuilder build = new ResponseBuilder("HTTP/1.1 300 OK
 Content-Type: text/html; charset=UTF-8
 Cache-Control: no-cache
 Pragma: no-cache
@@ -108,35 +108,35 @@ Server: Sineatra
 Vary: Accept-Encoding
 
 Hello, world!");
-	clientSocket.sendAll(build.final);
-	clientSocket.close();
-	debug("Socket has closed.");
-	//sleep(2);
+    clientSocket.sendAll(build.final);
+    clientSocket.close();
+    debug("Socket has closed.");
+    //sleep(2);
 }
 
 void setupListener(int port){
-	TcpAddress bindTo = new TcpAddress("127.0.0.1",short:port);
-	servSocket = new Socket;
-	servSocket.reuse(true);
-	servSocket.bind(bindTo);
-	servSocket.listen();
-	debug("Setting up socket!");
-	tPool.addTask \(){
-		while(true){
-			listenSocket;
-		}
-	};
+    TcpAddress bindTo = new TcpAddress("127.0.0.1",short:port);
+    servSocket = new Socket;
+    servSocket.reuse(true);
+    servSocket.bind(bindTo);
+    servSocket.listen();
+    debug("Setting up socket!");
+    tPool.addTask \(){
+        while(true){
+            listenSocket;
+        }
+    };
 }
 
 void get(string path, string delegate() onRequest){
-	get(path,delegate string(RequestProperties request){ onRequest(); });
+    get(path,delegate string(RequestProperties request){ onRequest(); });
 }
 
 void get(string path, string delegate(RequestProperties request) onRequest){
-	if(!isSetup){ 
-		isSetup = true;
-		initSineatra;
-	}
-	Path currentPath = new Path(path,onRequest);
-	matchedPaths ~ currentPath;
+    if(!isSetup){
+        isSetup = true;
+        initSineatra;
+    }
+    Path currentPath = new Path(path,onRequest);
+    matchedPaths ~ currentPath;
 }
