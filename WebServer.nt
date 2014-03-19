@@ -48,9 +48,12 @@ void listenSocket(){
     scope readBuffer = new ubyte[] 512;
     int k = 0; //Bytes last read
     while(true){
+        if(clientSocket.sockfd<=0){
+            return; //recv throws "Condition: Error: While closing socket: Bad file descriptor" magically
+        }
         k=clientSocket.recv(readBuffer);
         debug(scope= "Read $k bytes");
-        if(k==-1){
+        if(k<=0){
             debug("Stream ended");
             break;
         }
