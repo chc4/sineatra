@@ -12,11 +12,9 @@ import c.arpa.inet;
 
 alias DEBUG_BUILD = true;
 
-template debug(T){
-    void debug(T str){
-        static if(DEBUG_BUILD){
-            writeln("$str");
-        }
+void debug(string str){
+    static if(DEBUG_BUILD){
+        writeln str;
     }
 }
 
@@ -42,30 +40,30 @@ void listenSocket(){
         fprintf(stdout,"%.*s\n","$e");
         return;
     }
-    scope Socket clientSocket = servSocket.accept();
+    scope clientSocket = servSocket.accept();
     (sockaddr* addr,int a) = clientSocket.boundAddr.getAddrHandle();
-    char* addrStr = inet_ntoa(sockaddr_in*:addr.sin_addr);
-    debug("Connection incomming. IP:$(addrStr.CToString())");
+    char* addrStr = inet_ntoa(sockaddr_in*:addr.sin_addr); // note: not threadsafe lel
+    debug(scope= "Connection incomming. IP:$(addrStr.CToString())");
     scope char[auto~] readBytes;
-    ubyte[] readBuffer = new ubyte[] 512;
+    scope readBuffer = new ubyte[] 512;
     int k = 0; //Bytes last read
     while(true){
         k=clientSocket.recv(readBuffer);
-        debug("Read $k bytes");
+        debug(scope= "Read $k bytes");
         if(k==-1){
             debug("Stream ended");
             break;
         }
-        readBytes~=(char[]:readBuffer)[0..k];
-        if((string:readBuffer)[0..k].rfind("\r\n\r\n")!=-1){
+        auto readStr = (string:readBuffer)[0..k];
+        readBytes ~= readStr;
+        if(readStr.rfind("\r\n\r\n")){
             debug("Double newline!");
             break;
         }
     }
-    readBuffer.free;
-    debug("$(char[]:readBytes[])");
-    scope RequestProperties request = new RequestProperties; //Object to keep track of the request attributes
-    scope ResponseBuilder response = new ResponseBuilder(""); //Object to write the response's attributes
+    debug(string:readBytes[]);
+    scope request = new RequestProperties; //Object to keep track of the request attributes
+    scope response = new ResponseBuilder(""); //Object to write the response's attributes
     request.underlayingSocket = clientSocket;
     request.url = "";
     scope string[] matches;
@@ -79,14 +77,14 @@ void listenSocket(){
         return;
     }
     request.url = url;
-    debug("ReqType = $(reqtype)\nURL = $(url)\nHTTPJunk = $(httpReq)");
+    debug(scope= "ReqType = $(reqtype)\nURL = $(url)\nHTTPJunk = $(httpReq)");
     while(true){
         if(string curHeader = slice(&content,"\r\n")){
             if(curHeader.length==0){
                 debug("Empty line");
                 break;
             }
-            writeln("$curHeader");
+            writeln(curHeader);
             string (curHeaderA,curHeaderB) = curHeader.slice(":");
             if(curHeaderA is null || curHeaderB is null){
                 debug("Malformed header!");
@@ -95,12 +93,12 @@ void listenSocket(){
             if(curHeaderB[$-1]==";"){ //Can't have a 0 length string, so safe
                 curHeaderB = curHeaderB[0..$-1];
             }
-            request.headers ~ (curHeaderA,curHeaderB);
+            request.headers ~= (curHeaderA,curHeaderB);
         }else{
             break;
         }
     }
-    scope ResponseBuilder build = new ResponseBuilder("HTTP/1.1 300 OK
+    scope build = new ResponseBuilder("HTTP/1.1 300 OK
 Content-Type: text/html; charset=UTF-8
 Cache-Control: no-cache
 Pragma: no-cache

@@ -17,6 +17,7 @@ class RequestProperties{
     void free(){
         headers.free;
         arguments.free;
+        super.free;
     }
 }
 
@@ -26,6 +27,7 @@ class ResponseProperties{
 
     void free(){
         headers.free;
+        super.free;
     }
 }
 
@@ -35,7 +37,7 @@ class ResponseBuilder{
         return content[];
     }
     void append(string text){
-        string ntext = text.replace("\n","\r\n"); //HTTP uses CRLF, Linux uses LF, stuff breaks
+        scope string ntext = text.replace("\n","\r\n"); //HTTP uses CRLF, Linux uses LF, stuff breaks
         content~=(ubyte[]:ntext);
     }
     void init(string _text){
@@ -44,6 +46,7 @@ class ResponseBuilder{
 
     void free(){
         content.free;
+        super.free;
     }
 }
 
