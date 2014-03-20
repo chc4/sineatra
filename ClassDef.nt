@@ -52,8 +52,8 @@ class ResponseBuilder{
 
     string final(){
         this.header("Content-Length: $(content.length)");
-        scope string head = headers[].reduce(\(string x,y){ return x~y~"\r\n"; });
-        return head~"\r\n"~string:content[];
+        scope string head = headers[].reduce(\(string x,y){ return x~"\r\n"~y; });
+        return head~"\r\n\r\n"~string:content[];
     }
     void append(string text){
         scope string ntext = text.replace("\n","\r\n"); //HTTP uses CRLF, Linux uses LF, stuff breaks
