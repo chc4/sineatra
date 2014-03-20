@@ -30,7 +30,6 @@ class ResponseProperties{
 
     ubyte[] final(){
         auto resp = "HTTP/1.1 $(this.resCode) $(this.resStr)\r\n$(this.builder.final())";
-        writeln(resp);
         return ubyte[]:resp; //$(this.builder.final())";
     }
 
