@@ -106,12 +106,12 @@ void listenSocket(){
     build.header("Content-Type: text/html; charset=utf-8");
     build.header("Cache-Control: no-cache");
     build.header("Vary: Accept-Encoding");
-    build.append("Hello, world!\nYour IP is: $(addrStr.CToString())");
+    build.append(scope= "Hello, world!\r\nYour IP is: $(addrStr.CToString())");
 
     //auto lambdaPage = selectPage(url);
     //lambdaPage(request,response); //OK Current problem, onRequest is null for the overloaded delegates because
     // I forget how to define a static lambda. That is a problem.
-    clientSocket.sendAll(response.final());
+    clientSocket.sendAll(scope= response.final());
     clientSocket.close();
     debug("Socket has closed.");
     //sleep(2);
