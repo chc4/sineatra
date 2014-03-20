@@ -6,8 +6,8 @@ import sineatra.ClassDef;
 
 
 void main(string[] arg){
-    get("/test/path",delegate string(RequestProperties request){
-        return "$(request.args)";
+    get("/test/path",delegate int(ResponseProperties response){
+        response.builder.append("Hello, world!");
     });
     tPool.waitComplete;
 }

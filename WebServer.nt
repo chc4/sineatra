@@ -4,7 +4,6 @@ import std.socket;
 import sineatra.ClassDef;
 
 import std.thread;
-import std.time;
 import std.string;
 import std.process;
 
@@ -66,7 +65,7 @@ void listenSocket(){
     }
     debug(string:readBytes[]);
     scope request = new RequestProperties; //Object to keep track of the request attributes
-    scope response = new ResponseBuilder(""); //Object to write the response's attributes
+    scope response = new ResponseProperties; //Object to write the response's attributes
     request.underlayingSocket = clientSocket;
     request.url = "";
     scope string[] matches;
@@ -101,15 +100,18 @@ void listenSocket(){
             break;
         }
     }
-    scope build = new ResponseBuilder("HTTP/1.1 300 OK
-Content-Type: text/html; charset=UTF-8
-Cache-Control: no-cache
-Pragma: no-cache
-Server: Sineatra
-Vary: Accept-Encoding
+    auto build = new ResponseBuilder; //Cleaned up by ResponseProperties
+    response.builder = build;
+    build.header("Server: Sineatra");
+    build.header("Content-Type: text/html; charset=utf-8");
+    build.header("Cache-Control: no-cache");
+    build.header("Vary: Accept-Encoding");
+    build.append("Hello, world!\nYour IP is: $(addrStr.CToString())");
 
-Hello, world!");
-    clientSocket.sendAll(build.final);
+    //auto lambdaPage = selectPage(url);
+    //lambdaPage(request,response); //OK Current problem, onRequest is null for the overloaded delegates because
+    // I forget how to define a static lambda. That is a problem.
+    clientSocket.sendAll(response.final());
     clientSocket.close();
     debug("Socket has closed.");
     //sleep(2);
@@ -129,15 +131,26 @@ void setupListener(int port){
     };
 }
 
-void get(string path, string delegate() onRequest){
-    get(path,delegate string(RequestProperties request){ onRequest(); });
+//get("/path",\(){ internal_thing; });
+void get(string path, int delegate() onRequest){
+    get(path,delegate int(RequestProperties request){ onRequest(); });
 }
 
-void get(string path, string delegate(RequestProperties request) onRequest){
+//get("/path",\(RequestProperties request){ if(request.thing) internal_thing; });
+void get(string path,int delegate(RequestProperties request) onRequest){
+    get(path,delegate int(RequestProperties request, ResponseProperties response){ onRequest(request); });
+}
+
+//get("/path",\(ResponseProperties response){ response.append(""); });
+void get(string path,int delegate(ResponseProperties response) onRequest){
+    get(path,delegate int(RequestProperties request, ResponseProperties response){ onRequest(response); });
+}
+
+void get(string path, int delegate(RequestProperties request, ResponseProperties response) onRequest){
     if(!isSetup){
         isSetup = true;
         initSineatra;
     }
     Path currentPath = new Path(path,onRequest);
-    matchedPaths ~ currentPath;
+    matchedPaths ~= currentPath;
 }
