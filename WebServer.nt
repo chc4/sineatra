@@ -27,7 +27,6 @@ void initSineatra(){
 }
 
 void initSineatra(int port){ //Called if not already setup before get()
-    matchedPaths = new Path[auto~] 4;
     tPool = new ThreadPool(17); //Server accept loop + 16 connections
     setupListener(port);
 }
@@ -108,8 +107,9 @@ void listenSocket(){
     build.header("Vary: Accept-Encoding");
     build.append(scope= "Hello, world!\r\nYour IP is: $(addrStr.CToString())");
 
-    //auto lambdaPage = selectPage(url);
-    //lambdaPage(request,response); //OK Current problem, onRequest is null for the overloaded delegates because
+    auto lambdaPage = matchedPaths[0].onRequest;//selectPage(url);
+    lambdaPage(request,response);
+    //OK Current problem, onRequest is null for the overloaded delegates because
     // I forget how to define a static lambda. That is a problem.
     clientSocket.sendAll(scope= response.final());
     clientSocket.close();
@@ -133,17 +133,17 @@ void setupListener(int port){
 
 //get("/path",\(){ internal_thing; });
 void get(string path, int delegate() onRequest){
-    get(path,new delegate int(RequestProperties request){ onRequest(); });
+    get(path,new delegate int(RequestProperties request){ return onRequest(); });
 }
 
 //get("/path",\(RequestProperties request){ if(request.thing) internal_thing; });
 void get(string path,int delegate(RequestProperties request) onRequest){
-    get(path,new delegate int(RequestProperties request, ResponseProperties response){ onRequest(request); });
+    get(path,new delegate int(RequestProperties request, ResponseProperties response){ return onRequest(request); });
 }
 
 //get("/path",\(ResponseProperties response){ response.append(""); });
 void get(string path,int delegate(ResponseProperties response) onRequest){
-    get(path,new delegate int(RequestProperties request, ResponseProperties response){ onRequest(response); });
+    get(path,new delegate int(RequestProperties request, ResponseProperties response){ return onRequest(response); });
 }
 
 void get(string path, int delegate(RequestProperties request, ResponseProperties response) onRequest){
