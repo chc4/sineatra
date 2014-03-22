@@ -133,17 +133,17 @@ void setupListener(int port){
 
 //get("/path",\(){ internal_thing; });
 void get(string path, int delegate() onRequest){
-    get(path,delegate int(RequestProperties request){ onRequest(); });
+    get(path,new delegate int(RequestProperties request){ onRequest(); });
 }
 
 //get("/path",\(RequestProperties request){ if(request.thing) internal_thing; });
 void get(string path,int delegate(RequestProperties request) onRequest){
-    get(path,delegate int(RequestProperties request, ResponseProperties response){ onRequest(request); });
+    get(path,new delegate int(RequestProperties request, ResponseProperties response){ onRequest(request); });
 }
 
 //get("/path",\(ResponseProperties response){ response.append(""); });
 void get(string path,int delegate(ResponseProperties response) onRequest){
-    get(path,delegate int(RequestProperties request, ResponseProperties response){ onRequest(response); });
+    get(path,new delegate int(RequestProperties request, ResponseProperties response){ onRequest(response); });
 }
 
 void get(string path, int delegate(RequestProperties request, ResponseProperties response) onRequest){
